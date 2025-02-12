@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import cors from "cors";
 import OpenAI from "openai";
 import "colors";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config({
   path: "./config/config.env",
@@ -11,6 +12,8 @@ dotenv.config({
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const genAI = new GoogleGenerativeAI(process.env.GEMNI_API_KEY);
 
 const app = express();
 app.use(cors());
@@ -22,7 +25,7 @@ app.get("/", async (req, res) => {
   });
 });
 
-app.post("/", async (req, res) => {
+app.post("/openai", async (req, res) => {
   try {
     const { prompt } = req.body.prompt;
 
@@ -40,8 +43,30 @@ app.post("/", async (req, res) => {
       response: response.data.choices[0].text,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error calling OpenAI API:", error);
     res.status(500).send({ error });
+  }
+});
+
+app.post('/gemini', async (req, res) => {
+  try {
+      const prompt = req.body.prompt;
+
+      // Initialize the Gemini model
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text(); // Correctly extract the text from the response
+
+      console.log("Gemini response:", responseText);
+
+      // Send the response text back to the client
+      res.status(200).send({
+        bot: responseText,
+      });
+  } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      res.status(500).send({ error: "Failed to generate response." });
   }
 });
 
