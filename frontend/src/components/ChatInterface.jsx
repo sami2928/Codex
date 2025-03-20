@@ -1,20 +1,26 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { Button } from '@mui/material';
+import StopCircleSharpIcon from '@mui/icons-material/StopCircleSharp';
 import {
   Search,
-  Plus,
+  Add,
   Lightbulb,
-  ArrowUp,
+  ArrowUpward,
   Menu,
+  Edit,
+  Autorenew,
+  ContentCopy,
+  Share,
+  ThumbUpAlt,
+  ThumbDownAlt
+} from '@mui/icons-material';
+
+import {
   PenSquare,
-  RefreshCcw,
-  Copy,
-  Share2,
-  ThumbsUp,
-  ThumbsDown,
 } from "lucide-react"
-import { Button } from "./ui/button"
+ 
 import { Textarea } from "./ui/textarea"
 import { cn } from "../lib/utils"
 
@@ -73,7 +79,6 @@ export default function ChatInterface() {
   const mainContainerRef = useRef(null)
   // Store selection state
   const selectionStateRef = useRef({ start: null, end: null })
-
   // Constants for layout calculations to account for the padding values
   const HEADER_HEIGHT = 48 // .75rem height + padding
   const INPUT_AREA_HEIGHT = 100 // Approximate height of input area with padding
@@ -299,8 +304,24 @@ export default function ChatInterface() {
     }
   };
 
+  const startLoader = (setLoaderText) => {
+    let loaderText = "";
+    const loadInterval = setInterval(() => {
+      loaderText += ".";
+      if (loaderText === "....") {
+        loaderText = "";
+      }
+      setLoaderText(loaderText);
+    }, 300);
+  
+    return loadInterval;
+  };
+  
+  const stopLoader = (loadInterval) => {
+    clearInterval(loadInterval);
+  };
+
   const simulateAIResponse = async (userMessage) => {
-    const response = await getAIResponse(userMessage)
     const messageId = Date.now().toString()
     setStreamingMessageId(messageId)
 
@@ -312,6 +333,16 @@ export default function ChatInterface() {
         type: "system",
       },
     ])
+
+    const setLoaderText = (text) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === messageId ? { ...msg, content: text } : msg))
+      );
+    };
+
+    const loadInterval = startLoader(setLoaderText);
+    const response = await getAIResponse(userMessage)
+    stopLoader(loadInterval); // Stop the loader
 
     // Add a delay before the second vibration
     setTimeout(() => {
@@ -469,19 +500,19 @@ export default function ChatInterface() {
         {message.type === "system" && message.completed && (
           <div className="flex items-center gap-2 px-4 mt-1 mb-2">
             <button className="text-gray-400 hover:text-gray-600 transition-colors">
-              <RefreshCcw className="h-4 w-4" />
+              <Autorenew className="h-2 w-2" />
             </button>
             <button className="text-gray-400 hover:text-gray-600 transition-colors">
-              <Copy className="h-4 w-4" />
+              <ContentCopy className="h-2 w-2" />
             </button>
             <button className="text-gray-400 hover:text-gray-600 transition-colors">
-              <Share2 className="h-4 w-4" />
+              <Share className="h-2 w-2" />
             </button>
             <button className="text-gray-400 hover:text-gray-600 transition-colors">
-              <ThumbsUp className="h-4 w-4" />
+              <ThumbUpAlt className="h-2 w-2" />
             </button>
             <button className="text-gray-400 hover:text-gray-600 transition-colors">
-              <ThumbsDown className="h-4 w-4" />
+            <ThumbDownAlt className="h-2 w-2" />
             </button>
           </div>
         )}
@@ -493,6 +524,13 @@ export default function ChatInterface() {
   const shouldApplyHeight = (sectionIndex) => {
     return sectionIndex > 0
   }
+
+  const handleStopStreaming = () => {
+    // Stop the streaming process
+    setIsStreaming(false);
+    setStreamingWords([]);
+    setStreamingMessageId(null);
+  };
 
   return (
     <div
@@ -555,6 +593,7 @@ export default function ChatInterface() {
           >
             <div className="pb-9">
               <Textarea
+             
                 ref={textareaRef}
                 placeholder={isStreaming ? "Waiting for response..." : "Ask Anything"}
                 className="min-h-[1.5rem] max-h-[10rem] w-full rounded-3xl border-0 bg-transparent text-gray-900 placeholder:text-gray-400 placeholder:text-base focus-visible:ring-0 focus-visible:ring-offset-0 text-base pl-2 pr-4 pt-0 pb-0 resize-none overflow-y-auto leading-tight"
@@ -584,7 +623,7 @@ export default function ChatInterface() {
                     onClick={() => toggleButton("add")}
                     disabled={isStreaming}
                   >
-                    <Plus className={cn("h-4 w-4 text-gray-500", activeButton === "add" && "text-gray-700")} />
+                    <Add className={cn("h-4 w-4 text-gray-500", activeButton === "add" && "text-gray-700")} />
                     <span className="sr-only">Add</span>
                   </Button>
 
@@ -621,6 +660,18 @@ export default function ChatInterface() {
                   </Button>
                 </div>
 
+                {isStreaming ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full h-8 w-8 border-0 flex-shrink-0 transition-all duration-200 bg-red-500"
+                  onClick={handleStopStreaming}
+                >
+                  <StopCircleSharpIcon className="h-4 w-4 text-white" />
+                  <span className="sr-only">Stop</span>
+                </Button>
+              ) : (
                 <Button
                   type="submit"
                   variant="outline"
@@ -631,9 +682,10 @@ export default function ChatInterface() {
                   )}
                   disabled={!inputValue.trim() || isStreaming}
                 >
-                  <ArrowUp className={cn("h-4 w-4 transition-colors", hasTyped ? "text-white" : "text-gray-500")} />
+                  <ArrowUpward className={cn("h-4 w-4 transition-colors", hasTyped ? "text-white" : "text-gray-500")} />
                   <span className="sr-only">Submit</span>
                 </Button>
+              )}
               </div>
             </div>
           </div>
