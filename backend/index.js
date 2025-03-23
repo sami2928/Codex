@@ -1,9 +1,10 @@
-import express from "express";
-import * as dotenv from "dotenv";
-import cors from "cors";
-import OpenAI from "openai";
-import "colors";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const OpenAI = require("openai");
+require("colors");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 
 dotenv.config({
   path: "./config/config.env",
@@ -57,8 +58,6 @@ app.post('/gemini', async (req, res) => {
 
       const result = await model.generateContent(prompt);
       const responseText = result.response.text(); // Correctly extract the text from the response
-
-      console.log("Gemini response:", responseText);
 
       // Send the response text back to the client
       res.status(200).send({
