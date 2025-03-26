@@ -114,3 +114,33 @@ textarea::-webkit-scrollbar-thumb:hover {
   animation: fade-in 0.25s ease-out forwards;
 }
 
+.message-container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.user-message {
+  background-color: #d1e8ff;
+  color: #111;
+  padding: 10px 15px;
+  border-radius: 15px 15px 0 15px;
+  margin-left: auto; /* Push to the right */
+  max-width: 60%;
+  text-align: right;
+  animation: fade-in 0.25s ease-out forwards;
+}
+
+.bot-message {
+  background-color: #f1f1f1;
+  color: #111;
+  padding: 10px 15px;
+  border-radius: 15px 15px 15px 0;
+  margin-right: auto; /* Push to the left */
+  max-width: 60%;
+  text-align: left;
+  animation: fade-in 0.25s ease-out forwards;
+  self-end: auto;
+}
