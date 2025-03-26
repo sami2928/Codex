@@ -188,6 +188,12 @@ export default function ChatInterface() {
     }
   }, [messageSections]);
 
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messageSections]);
+
   // Focus the textarea on component mount (only on desktop)
   useEffect(() => {
     if (textareaRef.current && !isMobile) {
@@ -619,21 +625,21 @@ export default function ChatInterface() {
 
   const renderMessage = (message) => {
     const isCompleted = completedMessages.has(message.id);
-
+  
     return (
       <div
         key={message.id}
         className={cn(
           "flex flex-col",
-          message.type === "user" ? "items-end" : "items-start"
+          message.type === "user" ? "items-end" : "items-start w-full"
         )}
       >
         <div
           className={cn(
             "max-w-[80%] px-4 py-2 rounded-2xl",
             message.type === "user"
-              ? "bg-white border border-gray-200 rounded-br-none"
-              : "text-gray-900"
+              ? "bg-white border border-gray-200 rounded-br-none self-end"
+              : "bg-gray-100 text-gray-900"
           )}
         >
           {/* For user messages or completed system messages, render without animation */}
@@ -641,14 +647,14 @@ export default function ChatInterface() {
             <span
               className={
                 message.type === "system" && !isCompleted
-                  ? "animate-fade-in"
+                  ? "bg-gray-200 text-gray-800 self-start text-left"
                   : ""
               }
             >
               {message.content}
             </span>
           )}
-
+  
           {/* For streaming messages, render with animation */}
           {message.id === streamingMessageId && (
             <span className="inline">
@@ -660,27 +666,27 @@ export default function ChatInterface() {
             </span>
           )}
         </div>
-
+  
         {/* Message actions */}
         {message.type === "system" && message.completed && (
-          <div className="flex items-center gap-2 px-4 mt-1 mb-2">
+          <div className="flex items-center gap-2 px-4 pb-5 mt-1 mb-2">
             <button
               className="text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => handleButtonClick("autoRenew", message)}
             >
-              <Autorenew className="h-2 w-2" />
+              <Autorenew className="h-4 w-4" />
             </button>
             <button
               className="text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => handleButtonClick("copyContent", message)}
             >
-              <ContentCopy className="h-2 w-2" />
+              <ContentCopy className="h-4 w-4" />
             </button>
             <button
               className="text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => handleButtonClick("shareContent", message)}
             >
-              <Share className="h-2 w-2" />
+              <Share className="h-4 w-4" />
             </button>
             <button
               className={cn(
@@ -689,7 +695,7 @@ export default function ChatInterface() {
               )}
               onClick={() => handleButtonClick("thumbUp", message)}
             >
-              <ThumbUpAlt className="h-2 w-2" />
+              <ThumbUpAlt className="h-4 w-4" />
             </button>
             <button
               className={cn(
@@ -698,7 +704,7 @@ export default function ChatInterface() {
               )}
               onClick={() => handleButtonClick("thumbDown", message)}
             >
-              <ThumbDownAlt className="h-2 w-2" />
+              <ThumbDownAlt className="h-4 w-4" />
             </button>
           </div>
         )}
@@ -744,7 +750,7 @@ export default function ChatInterface() {
 
       <div
         ref={chatContainerRef}
-        className="flex-grow pb-32 pt-12 px-4 overflow-y-auto"
+        className="flex-grow pt-12 px-4 overflow-y-auto pb-[100px]"
       >
         <div className="max-w-3xl mx-auto space-y-4">
           {messageSections.map((section, sectionIndex) => (
@@ -781,7 +787,7 @@ export default function ChatInterface() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-50">
+      <div className="fixed bottom-0 left-0 right-0 p-3 bg-gray-50">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div
             ref={inputContainerRef}
