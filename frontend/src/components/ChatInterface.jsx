@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@mui/material";
 import StopCircleSharpIcon from "@mui/icons-material/StopCircleSharp";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import {
   Search,
   Add,
@@ -21,6 +22,7 @@ import { PenSquare } from "lucide-react";
 
 import { Textarea } from "./ui/textarea";
 import { cn } from "../lib/utils";
+import Sidebar from "./Sidebar";
 
 // Polyfill for vibration API if not available
 if (!navigator.vibrate) {
@@ -84,6 +86,11 @@ export default function ChatInterface() {
   const BOTTOM_PADDING = 128; // pb-32 (128px = 8rem)
   const ADDITIONAL_OFFSET = 16; // Reduced offset for fine-tuning
   const [copiedMessageId, setCopiedMessageId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
 
   // Check if device is mobile and get viewport height
   useEffect(() => {
@@ -625,7 +632,7 @@ export default function ChatInterface() {
 
   const renderMessage = (message) => {
     const isCompleted = completedMessages.has(message.id);
-  
+
     return (
       <div
         key={message.id}
@@ -654,7 +661,7 @@ export default function ChatInterface() {
               {message.content}
             </span>
           )}
-  
+
           {/* For streaming messages, render with animation */}
           {message.id === streamingMessageId && (
             <span className="inline">
@@ -666,7 +673,7 @@ export default function ChatInterface() {
             </span>
           )}
         </div>
-  
+
         {/* Message actions */}
         {message.type === "system" && message.completed && (
           <div className="flex items-center gap-2 px-4 pb-5 mt-1 mb-2">
@@ -727,15 +734,45 @@ export default function ChatInterface() {
   return (
     <div
       ref={mainContainerRef}
-      className="bg-gray-50 flex flex-col overflow-hidden"
+      className={cn(
+        "bg-gray-50 flex flex-col overflow-hidden transition-all",
+        isSidebarOpen ? "ml-64" : "ml-0" // Add margin-left when sidebar is open
+      )}
       style={{ height: isMobile ? `${viewportHeight}px` : "100vh" }}
     >
-      <header className="fixed top-0 left-0 right-0 h-12 flex items-center px-4 z-20 bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+        messages={messages}
+      />
+      {/* Header */}
+
+      <header className="fixed top-0 left-0 right-0 h-12 border-b flex items-center px-4 z-20 bg-gray-50">
         <div className="w-full flex items-center justify-between px-2">
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-            <Menu className="h-5 w-5 text-gray-700" />
-            <span className="sr-only">Menu</span>
-          </Button>
+          {/* Sidebar Toggle Button */}
+          {!isSidebarOpen && (
+            <div className="flex items-center gap-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="!p-2 !m-0 !min-w-0"
+                onClick={toggleSidebar}
+              >
+                <MenuBookIcon className="h-5 w-5 !m-0 text-gray-700" />
+                <span className="sr-only">Open Sidebar</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="!p-2 !m-0 !min-w-0"
+                onClick={() => console.log("New Chat Clicked")}
+              >
+                <PenSquare className="h-5 w-5 !m-0 text-gray-700" />
+                <span className="sr-only">New Chat</span>
+              </Button>
+            </div>
+          )}
 
           <h1 className="text-base font-medium text-gray-800">
             Codex Coding AI
@@ -748,6 +785,7 @@ export default function ChatInterface() {
         </div>
       </header>
 
+      {/* Main Content */}
       <div
         ref={chatContainerRef}
         className="flex-grow pt-12 px-4 overflow-y-auto pb-[100px]"
